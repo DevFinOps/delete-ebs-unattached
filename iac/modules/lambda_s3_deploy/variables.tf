@@ -37,6 +37,12 @@ variable "lambda_timeout" {
   default     = 60 ##Como padrão será 60 segundos, mas altere conforme necessidade
 }
 
+variable "lambda_runtime" {
+  type        = string
+  description = "Runtime da função Lambda"
+  default     = "python3.9"
+}
+
 variable "lambda_zip_path" {
   type        = string
   description = "Caminho do arquivo zip da função Lambda"

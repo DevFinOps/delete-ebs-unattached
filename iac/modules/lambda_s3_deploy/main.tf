@@ -58,7 +58,7 @@ resource "aws_iam_role" "iam_role" {
 # Criação da Função Lambda
 resource "aws_lambda_function" "lambda_function" {
   function_name = var.lambda_name
-  runtime      = "python3.9"
+  runtime      = var.lambda_runtime
   handler       = var.lambda_handler
   memory_size   = var.lambda_memory_size
   timeout       = var.lambda_timeout
@@ -66,6 +66,13 @@ resource "aws_lambda_function" "lambda_function" {
   s3_bucket     = aws_s3_bucket.bucket_s3.id
   s3_key        = aws_s3_object.script_file.key
   
+  # Criando variaveis de ambiente que vão ser usadas pelo codigo python também
+  environment {
+    variables = {
+      TARGET_BUCKET_S3 = aws_s3_bucket.bucket_s3.id
+    }
+  }
+
   tags = merge(var.tags, {
     name        = "tf-lambda"
   })
