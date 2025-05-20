@@ -117,3 +117,7 @@ def lambda_handler(event, context):
         count_ebs_nao_excluidos_por_regiao,
         ebs_nao_excluidos,
     )
+
+#Upload de arquivo para bucet s3
+def upload_file_to_s3(file_path, bucket_name, object_name):
+    pass
