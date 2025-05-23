@@ -12,3 +12,13 @@ output "lambda_function_name" {
   value       = aws_lambda_function.lambda_function.function_name
   description = "Nome da função Lambda criada"
 }
+
+output "sns_topic_arn" {
+  value       = aws_sns_topic.sns_topic.arn
+  description = "ARN do tópico SNS criado"
+}
+
+output "sns_topic_name" {
+  value       = aws_sns_topic.sns_topic.name
+  description = "Nome do tópico SNS criado"
+}

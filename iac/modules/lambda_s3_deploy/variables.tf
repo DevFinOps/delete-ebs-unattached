@@ -5,6 +5,13 @@ variable "bucket_name" {
   default     = "devfinops.tf.bucket.delete-ebs-unattached"
 }
 
+## Informações do SNS ##
+variable "sns_topic_name" {
+  type        = string
+  description = "Nome do tópico SNS"
+  default     = "devfinops_tf_sns_delete-ebs-unattached"
+}
+
 ## Informações do IAM ##
 variable "iam_role_name" {
   type        = string

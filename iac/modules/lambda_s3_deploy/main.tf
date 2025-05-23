@@ -32,6 +32,15 @@ resource "aws_s3_object" "script_file" {
   depends_on = [aws_s3_object.script_folder]
 }
 
+# Criação do topico SNS
+resource "aws_sns_topic" "sns_topic" {
+  name = var.sns_topic_name
+
+  tags = merge(var.tags, {
+    name        = "tf-sns-topic"
+  })
+}
+
 # Criação da Role IAM para a função Lambda
 resource "aws_iam_role" "iam_role" {
   name = var.iam_role_name
@@ -70,6 +79,7 @@ resource "aws_lambda_function" "lambda_function" {
   environment {
     variables = {
       TARGET_BUCKET_S3 = aws_s3_bucket.bucket_s3.id
+      SNS_TOPIC_ARN = aws_sns_topic.sns_topic.arn
     }
   }
 
@@ -77,5 +87,8 @@ resource "aws_lambda_function" "lambda_function" {
     name        = "tf-lambda"
   })
   
-  depends_on = [aws_s3_object.script_file]
+  depends_on = [
+                aws_s3_object.script_file,
+                aws_sns_topic.sns_topic
+                ]
 }
