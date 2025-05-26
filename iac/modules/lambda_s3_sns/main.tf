@@ -49,18 +49,65 @@ resource "aws_iam_role" "iam_role" {
     Version = "2012-10-17"
     Statement = [
       {
-        Action    = "sts:AssumeRole"
+        Action = "sts:AssumeRole"
+        Effect = "Allow"
         Principal = {
           Service = "lambda.amazonaws.com"
         }
-        Effect    = "Allow"
-        Sid       = ""
-      },
+      }, 
     ]
   })
 
   tags = merge(var.tags, {
     name        = "tf-role"
+  })
+}
+
+#Criação da Policy IAM
+resource "aws_iam_role_policy" "iam_role_policy" {
+  name = var.iam_role_policy_name
+  role = aws_iam_role.iam_role.id
+
+  policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [
+      {
+        Action = [
+          "logs:CreateLogGroup",
+          "logs:CreateLogStream",
+          "logs:PutLogEvents"
+        ],
+        Effect   = "Allow",
+        Resource = "arn:aws:logs:${data.aws_region.current.name}:${data.aws_caller_identity.current.account_id}:*" # Mais robusto que *:*
+      },
+      {
+        Action = [
+          "ec2:DescribeVolumes",
+          "ec2:DescribeVolumeAttribute",
+          "ec2:DescribeVolumeStatus",
+          "ec2:DescribeTags",
+          "ec2:DescribeInstances",
+          "ec2:DeleteVolume",
+        ],
+        Effect   = "Allow",
+        Resource = "*" 
+      },
+      {
+        Action = [
+          "s3:PutObject",
+          "s3:GetObject" 
+        ],
+        Effect   = "Allow",
+        Resource = "arn:aws:s3:::${aws_s3_bucket.bucket_s3.id}/*"
+      },
+      {
+        Action = [
+          "sns:Publish"
+        ],
+        Effect   = "Allow",
+        Resource = aws_sns_topic.sns_topic.arn
+      }
+    ]
   })
 }
 
@@ -80,6 +127,7 @@ resource "aws_lambda_function" "lambda_function" {
     variables = {
       TARGET_BUCKET_S3 = aws_s3_bucket.bucket_s3.id
       SNS_TOPIC_ARN = aws_sns_topic.sns_topic.arn
+      TARGET_REGIONS = jsonencode(var.regions)
     }
   }
 
@@ -92,3 +140,6 @@ resource "aws_lambda_function" "lambda_function" {
                 aws_sns_topic.sns_topic
                 ]
 }
+
+data "aws_region" "current" {}
+data "aws_caller_identity" "current" {}
