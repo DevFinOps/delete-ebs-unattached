@@ -1,14 +1,12 @@
-import boto3
-import csv
 import os
+import csv
 import json
-from logging import basicConfig, info, error, INFO
+import boto3
 from io import StringIO
 from datetime import datetime
+from logging import basicConfig, info, error, INFO
 
-# regions = ["us-east-1", "sa-east-1"]
-
-#Variaveis de ambiente
+#Variaveis de ambiente passadas através do AWS Lambda
 BUCKET_NAME = os.environ.get("TARGET_BUCKET_S3")
 SNS_TOPIC_ARN = os.environ.get("SNS_TOPIC_ARN")
 REGIONS = os.environ.get("TARGET_REGIONS", "[]")
