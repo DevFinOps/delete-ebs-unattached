@@ -19,7 +19,19 @@ variable "iam_role_name" {
   default     = "devfinops.tf.iam_role"
 }
 
+variable "iam_role_policy_name" {
+  type        = string
+  description = "Nome da policy IAM"
+  default     = "devfinops.tf.iam_role_policy"
+}
+
 ## Informações da Lambda ##
+variable "regions"{
+  type        = list(string)
+  description = "Regiões onde a lambda precisa verificar EBS não anexados"
+  default     = ["us-east-1", "sa-east-1"] 
+}
+
 variable "lambda_name" {
   type        = string
   description = "Nome da função Lambda"
