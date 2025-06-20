@@ -22,3 +22,8 @@ output "sns_topic_name" {
   value       = aws_sns_topic.sns_topic.name
   description = "Nome do tópico SNS criado"
 }
+
+output "sns_subscription_arn" {
+  value       = aws_sns_topic_subscription.email_subscription.arn
+  description = "ARN da assinatura do SNS criada"
+}

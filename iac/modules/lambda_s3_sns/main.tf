@@ -2,6 +2,8 @@
 resource "aws_s3_bucket" "bucket_s3" {
   bucket = var.bucket_name
 
+  force_destroy = true
+
   tags = merge(var.tags, {
     name        = "tf-bucket"
   })
@@ -39,6 +41,12 @@ resource "aws_sns_topic" "sns_topic" {
   tags = merge(var.tags, {
     name        = "tf-sns-topic"
   })
+}
+
+resource "aws_sns_topic_subscription" "email_subscription" {
+  topic_arn = aws_sns_topic.sns_topic.arn 
+  protocol  = "email"
+  endpoint  = var.sns_email_endpoint 
 }
 
 # Criação da Role IAM para a função Lambda
