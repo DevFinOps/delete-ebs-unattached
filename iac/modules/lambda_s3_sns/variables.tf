@@ -15,7 +15,7 @@ variable "sns_topic_name" {
 variable "sns_email_endpoint" {
   type        = string
   description = "Endereço de e-mail para receber notificações do SNS"
-  default     = "" ##Substitua pelo seu e-mail
+  default     = "vesteves33@gmail.com" ##Substitua pelo seu e-mail
 }
 
 ## Informações do IAM ##
@@ -38,16 +38,28 @@ variable "regions"{
   default     = ["us-east-1", "sa-east-1"] 
 }
 
-variable "lambda_name" {
+variable "lambda_delete_ebs_function" {
   type        = string
   description = "Nome da função Lambda"
   default     = "devfinops_tf_lambda_delete_ebs_unattached"
 }
 
-variable "lambda_handler" {
+variable "lambda_estimate_ebs_function" {
+  type        = string
+  description = "Nome da função Lambda"
+  default     = "devfinops_tf_lambda_estimate_ebs_unattached"
+}
+
+variable "delete_ebs_handler" {
   type        = string
   description = "Função handler da lambda"
   default     = "delete_ebs_noAttached.handler"
+}
+
+variable "estimate_ebs_handler" {
+  type        = string
+  description = "Função handler da lambda"
+  default     = "estimate_ebs_noAttached.handler"
 }
 
 variable "lambda_memory_size" {
@@ -68,10 +80,16 @@ variable "lambda_runtime" {
   default     = "python3.9"
 }
 
-variable "lambda_zip_path" {
+variable "delete_ebs_zip_path" {
   type        = string
   description = "Caminho do arquivo zip da função Lambda"
-  default     = "./python.zip"
+  default     = "./delete-ebs.zip"
+}
+
+variable "estimate_ebs_zip_path" {
+  type        = string
+  description = "Caminho do arquivo zip da função Lambda"
+  default     = "./estimate-ebs.zip"
 }
 
 ## Informações de Tags ##

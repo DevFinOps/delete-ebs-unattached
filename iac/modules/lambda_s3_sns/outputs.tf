@@ -1,6 +1,11 @@
-output "lambda_function_arn" {
-  value       = aws_lambda_function.lambda_function.arn
-  description = "ARN da função Lambda criada"
+output "delete_ebs_function_arn" {
+  value       = aws_lambda_function.delete_ebs_function.arn
+  description = "ARN da função Lambda delete ebs criada"
+}
+
+output "estimate_ebs_function_arn" {
+  value       = aws_lambda_function.estimate_ebs_function.arn
+  description = "ARN da função Lambda estimate ebs criada"
 }
 
 output "lambda_code_bucket_name" {
@@ -8,9 +13,14 @@ output "lambda_code_bucket_name" {
   description = "Nome do bucket S3 para o código da Lambda"
 }
 
-output "lambda_function_name" {
-  value       = aws_lambda_function.lambda_function.function_name
-  description = "Nome da função Lambda criada"
+output "delete_ebs_function_name" {
+  value       = aws_lambda_function.delete_ebs_function.function_name
+  description = "Função Lambda que percorre o ambiente identificando os ebs desatachados"
+}
+
+output "estimate_ebs_function_name" {
+  value       = aws_lambda_function.estimate_ebs_function.function_name
+  description = "Função Lambda que percorre o ambiente identificando os ebs desatachados"
 }
 
 output "sns_topic_arn" {
