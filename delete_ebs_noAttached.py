@@ -11,8 +11,37 @@ BUCKET_NAME = os.environ.get("TARGET_BUCKET_S3")
 SNS_TOPIC_ARN = os.environ.get("SNS_TOPIC_ARN")
 REGIONS = os.environ.get("TARGET_REGIONS", "[]")
 
+
 #Criando um logging para o código
 basicConfig(level=INFO, format="%(asctime)s - %(levelname)s - %(message)s")
+
+def get_aws_account_name_and_id() -> tuple:
+    '''
+    Obtém o nome e ID da conta AWS.
+
+    :return: Tupla contendo o nome da conta e o ID da conta.
+    '''
+    #Obtem id da conta AWS
+    sts_client = boto3.client("sts")
+    account_id = sts_client.get_caller_identity().get("Account")
+    
+    # Obtem o nome da conta
+    iam_client = boto3.client("iam")
+    account_name = ""
+    try:
+        account_aliases = iam_client.list_account_aliases().get("AccountAliases", [])
+        
+        if account_aliases:
+            info("Obtendo o primeiro alias da conta AWS")
+            account_name = account_aliases[0]  
+        else:
+            info("Nenhum alias encontrado para a conta AWS, usando '-' como nome da conta")
+            account_name = "-"
+    except Exception as e:
+        error(f"Erro ao obter o nome da conta AWS: {e}")
+    
+    return account_name, account_id
+
 
 def upload_file_to_s3(file_path, bucket_name, object_name) -> bool:
     '''
@@ -45,7 +74,10 @@ def send_email(
     count_ebs_excluidos_por_regiao,
     count_ebs_nao_excluidos_por_regiao,
     ebs_nao_excluidos,
-):
+) -> None:
+    
+    account_name, account_id = get_aws_account_name_and_id()
+
     # Publicar mensagem no tópico SNS
     sns_topic_arn = SNS_TOPIC_ARN
     if not sns_topic_arn:
@@ -76,7 +108,7 @@ def send_email(
     message += f"Total de EBS excluídos: {sum([count for _, count in count_ebs_excluidos_por_regiao])}.\n"
     message += f"Total de EBS não excluídos: {sum([count for _, count in count_ebs_nao_excluidos_por_regiao])}.\n"
 
-    subject = "Resumo da exclusão de Volumes EBS unattached na conta: Observability-dev"
+    subject = f"Resumo da exclusão de Volumes EBS unattached na conta: Nome:{account_name} ID:{account_id}"
 
     sns_client.publish(TopicArn=sns_topic_arn, Message=message, Subject=subject)
 
@@ -102,7 +134,6 @@ def create_csv_file(dict_data):
     output_file.close() 
 
     return csv_file
-
 
 # funcao lambda principal
 def handler(event, context):

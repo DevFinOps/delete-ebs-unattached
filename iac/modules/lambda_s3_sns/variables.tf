@@ -12,6 +12,12 @@ variable "sns_topic_name" {
   default     = "devfinops_tf_sns_delete-ebs-unattached"
 }
 
+variable "sns_email_endpoint" {
+  type        = string
+  description = "Endereço de e-mail para receber notificações do SNS"
+  default     = "" ##Substitua pelo seu e-mail
+}
+
 ## Informações do IAM ##
 variable "iam_role_name" {
   type        = string
