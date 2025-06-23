@@ -102,7 +102,7 @@ resource "aws_iam_role_policy" "iam_role_policy" {
           "logs:PutLogEvents"
         ],
         Effect   = "Allow",
-        Resource = "arn:aws:logs:${data.aws_region.current.name}:${data.aws_caller_identity.current.account_id}:*" # Mais robusto que *:*
+        Resource = "arn:aws:logs:${data.aws_region.current.name}:${data.aws_caller_identity.current.account_id}:*"
       },
       {
         Action = [
@@ -118,11 +118,14 @@ resource "aws_iam_role_policy" "iam_role_policy" {
       },
       {
         Action = [
+          "s3:ListBucket", 
           "s3:PutObject",
-          "s3:GetObject" 
+          "s3:GetObject",
         ],
         Effect   = "Allow",
-        Resource = "arn:aws:s3:::${aws_s3_bucket.bucket_s3.id}/*"
+        Resource = [aws_s3_bucket.bucket_s3.arn,   
+                    "${aws_s3_bucket.bucket_s3.arn}/*"
+                    ]
       },
       {
         Action = [
@@ -130,6 +133,13 @@ resource "aws_iam_role_policy" "iam_role_policy" {
         ],
         Effect   = "Allow",
         Resource = aws_sns_topic.sns_topic.arn
+      },
+      {
+        Action = [
+          "ce:GetCostAndUsage"
+          ],
+        Effect   = "Allow",
+        Resource = "*"
       }
     ]
   })
@@ -179,6 +189,7 @@ resource "aws_lambda_function" "estimate_ebs_function" {
   environment {
     variables = {
       TARGET_BUCKET_S3 = aws_s3_bucket.bucket_s3.id
+      TARGET_BUCKET_S3_FOLDER = "report/"
     }
   }
 
@@ -187,6 +198,30 @@ resource "aws_lambda_function" "estimate_ebs_function" {
   })
   
   depends_on = [aws_s3_object.estimate_ebs_file]
+}
+
+#Configuração da permissão do evento via bucket S3 acionador da execução da Lambda 
+resource "aws_lambda_permission" "allow_s3_to_invoke_lambda" {
+  statement_id  = "AllowS3InvokeLambda"
+  action        = "lambda:InvokeFunction"
+  function_name = aws_lambda_function.estimate_ebs_function.function_name
+  principal     = "s3.amazonaws.com"
+  source_arn    = aws_s3_bucket.bucket_s3.arn
+}
+
+# Isso configura o bucket para enviar eventos para a Lambda
+resource "aws_s3_bucket_notification" "s3_to_lambda_notification" {
+  bucket = aws_s3_bucket.bucket_s3.id
+
+  lambda_function {
+    lambda_function_arn = aws_lambda_function.estimate_ebs_function.arn
+    events              = ["s3:ObjectCreated:*"] 
+    filter_prefix       = "report/" 
+    filter_suffix     = ".csv" 
+  }
+
+  # Depende da permissão ser criada antes da notificação
+  depends_on = [aws_lambda_permission.allow_s3_to_invoke_lambda]
 }
 
 data "aws_region" "current" {}
