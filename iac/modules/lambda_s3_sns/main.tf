@@ -181,6 +181,16 @@ resource "aws_lambda_function" "delete_ebs_function" {
                 ]
 }
 
+#Configuração da layer que a estimate ebs vai precisar
+resource "aws_lambda_layer_version" "estimate_ebs_layer" {
+  filename = var.layer_estimate_ebs_zip_path
+  layer_name = "dependencies_estimate_ebs_function"
+  compatible_runtimes = [var.lambda_runtime]
+  source_code_hash = filebase64sha256(var.layer_estimate_ebs_zip_path)
+
+  description = "Layer contendo as dependencias da função estimate EBS"
+}
+
 resource "aws_lambda_function" "estimate_ebs_function" {
   function_name = var.lambda_estimate_ebs_function
   runtime      = var.lambda_runtime
@@ -191,6 +201,9 @@ resource "aws_lambda_function" "estimate_ebs_function" {
   s3_bucket     = aws_s3_bucket.bucket_s3.id
   s3_key        = aws_s3_object.estimate_ebs_file.key
   
+  # # Adicionando a layer que a função estimate ebs vai precisar
+  layers = [aws_lambda_layer_version.estimate_ebs_layer.arn]
+
   # Criando variaveis de ambiente que vão ser usadas pelo codigo python também
   environment {
     variables = {

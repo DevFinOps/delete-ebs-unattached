@@ -68,10 +68,10 @@ def get_daily_cost_for_resource(resource_id, start_date, end_date):
             Metrics=[
                 'UnblendedCost',
             ],
-            GroupBy=[{
+            GroupBy=[
                 {'Type': 'DIMENSION', 'Key': 'RESOURCE_ID'},
                 {'Type': 'DIMENSION', 'Key': 'RECORD_TYPE'},
-            }],
+            ],
             Filter={
                 'Dimensions': {'Key': 'RECORD_TYPE', 'Values': ['Usage']}
             }                

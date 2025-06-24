@@ -92,6 +92,12 @@ variable "estimate_ebs_zip_path" {
   default     = "./estimate-ebs.zip"
 }
 
+variable "layer_estimate_ebs_zip_path" {
+  type        = string
+  description = "Caminho do arquivo zip da layer da função Lambda"
+  default     = "./layer-content.zip"
+}
+
 ## Informações de Tags ##
 variable "tags" {
   type        = map(string)
