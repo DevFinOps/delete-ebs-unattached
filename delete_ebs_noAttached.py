@@ -11,7 +11,6 @@ BUCKET_NAME = os.environ.get("TARGET_BUCKET_S3")
 SNS_TOPIC_ARN = os.environ.get("SNS_TOPIC_ARN")
 REGIONS = os.environ.get("TARGET_REGIONS", "[]")
 
-
 #Criando um logging para o código
 basicConfig(level=INFO, format="%(asctime)s - %(levelname)s - %(message)s")
 
@@ -180,6 +179,7 @@ def handler(event, context):
                     else:
                     #Inclusao dos ebs que vao ser excluidos em uma lista para posterior upload em bucket s3    
                         volumes_list.append({
+                            "ListedDate": datetime.now().strftime("%Y-%m-%d"),
                             "VolumeId":volume["VolumeId"],
                             "VolumeType":volume["VolumeType"],
                             "Region":volume["AvailabilityZone"],
@@ -196,7 +196,6 @@ def handler(event, context):
                         ebs_excluidos.append(volume["VolumeId"])
                         count_ebs_excluidos += 1
                 else:
-                    # Se o volume está anexado a uma instância
                     print(f'O volume {volume["VolumeId"]} está anexado a uma instância')
                     ebs_nao_excluidos.append(volume["VolumeId"])
                     count_ebs_nao_excluidos += 1
@@ -233,7 +232,7 @@ def handler(event, context):
     
     # Definindo o nome do arquivo CSV
     timestamp = datetime.now().strftime("%Y%m%d%H%M%S")
-    csv_object_key = f"unattached_ebs_{timestamp}.csv"
+    csv_object_key = f"report/unattached_ebs_{timestamp}.csv"
 
     if not BUCKET_NAME:
             error("O nome do bucket S3 não foi fornecido verificar as variaveis de ambiente.")

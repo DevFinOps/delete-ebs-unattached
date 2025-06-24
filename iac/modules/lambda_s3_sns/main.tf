@@ -96,6 +96,11 @@ resource "aws_iam_role_policy" "iam_role_policy" {
     Version = "2012-10-17"
     Statement = [
       {
+        Action = "iam:ListAccountAliases", 
+        Effect = "Allow",
+        Resource = "*"      
+      },
+      {
         Action = [
           "logs:CreateLogGroup",
           "logs:CreateLogStream",
@@ -136,7 +141,8 @@ resource "aws_iam_role_policy" "iam_role_policy" {
       },
       {
         Action = [
-          "ce:GetCostAndUsage"
+          "ce:GetCostAndUsage",
+          "ce:GetCostAndUsageWithResources",
           ],
         Effect   = "Allow",
         Resource = "*"
