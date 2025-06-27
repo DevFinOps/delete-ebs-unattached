@@ -18,7 +18,8 @@ def get_aws_account_name_and_id() -> tuple:
     '''
     Obtém o nome e ID da conta AWS.
 
-    :return: Tupla contendo o nome da conta e o ID da conta.
+    Returns: 
+        Retorna uma tupla contendo o nome da conta e o ID da conta.
     '''
     #Obtem id da conta AWS
     sts_client = boto3.client("sts")
@@ -42,15 +43,17 @@ def get_aws_account_name_and_id() -> tuple:
     return account_name, account_id
 
 
-def upload_file_to_s3(file_path, bucket_name, object_name) -> bool:
+def upload_file_to_s3(file_path: str, bucket_name: str, object_name: str) -> bool:
     '''
     Realiza o upload de um arquivo para um Bucket S3.
 
-    :param file_path: Caminho completo para o arquivo local a ser enviado.
-    :param bucket_name: Nome do bucket S3 de destino.
-    :param object_name: Nome do objeto S3 (caminho completo no bucket).
+    Args:
+     file_path (str): Caminho completo para o arquivo local a ser enviado.
+     bucket_name (str): Nome do bucket S3 de destino.
+     object_name (str): Nome do objeto S3 (caminho completo no bucket).
                         Se não for fornecido, o nome base do file_path será usado.
-    :return: True se o upload for bem-sucedido, False caso contrário.
+    Return: 
+        Retorna verdadeiro para o upload bem sucedido.
     '''
 
     client = boto3.client("s3")
@@ -74,7 +77,9 @@ def send_email(
     count_ebs_nao_excluidos_por_regiao,
     ebs_nao_excluidos,
 ) -> None:
-    
+    '''
+
+    '''
     account_name, account_id = get_aws_account_name_and_id()
 
     # Publicar mensagem no tópico SNS
@@ -112,11 +117,14 @@ def send_email(
     sns_client.publish(TopicArn=sns_topic_arn, Message=message, Subject=subject)
 
 
-def create_csv_file(dict_data):
+def create_csv_file(dict_data: dict):
     '''
     Cria um arquivo CSV a partir de um dicionário de dados.
 
-    :param dict_data: Dicionário contendo os dados a serem escritos no arquivo CSV.
+    Args: 
+        dict_data (dict): Dicionário contendo os dados a serem escritos no arquivo CSV.
+    Return:
+        Retorna o arquivo CSV criado com os dados salvos.
     '''
 
     # Criar um objeto StringIO para armazenar os dados CSV em memória

@@ -1,5 +1,5 @@
 import os
-import pandas as pd
+import csv
 from io import StringIO
 from boto3 import client
 from datetime import datetime, timedelta
@@ -12,8 +12,10 @@ FOLDER_PREFIX = os.environ.get("TARGET_BUCKET_S3_FOLDER")
 #Criando um logging para o código
 basicConfig(level=INFO, format="%(asctime)s - %(levelname)s - %(message)s")
 
-#Função responsavel em ler o arquivo csv gerado pelo script delete ebs
 def get_data_csv_report_file():
+  '''
+    Obtém o arquivo CSV mais recente do bucket S3 especificado e extrai os IDs de recursos (VolumeId) do EBS.
+  '''
   s3 = client('s3')
 
   latest_file = None
@@ -40,11 +42,25 @@ def get_data_csv_report_file():
     file_body = obj_content['Body'].read().decode('utf-8')
     
     info("Transformando o objeto string em csv")
-    df = pd.read_csv(StringIO(file_body))
+    csv_file = StringIO(file_body)
+    reader = csv.reader(csv_file)
+
+    header = next(reader, None)
+    if header is None or 'VolumeId' not in header:
+        error(f"O CSV está vazio ou não possui cabeçalho.")
+        return None
+    
+    try:
+        volume_id_index = header.index('VolumeId')
+    except ValueError:
+        error(f"A coluna 'VolumeId' não foi encontrada no cabeçalho do CSV.")
+        return None
+    
+    for row in reader:
+        if row: 
+            list_id_resources.append(row[volume_id_index])
     
     info("Retornando a lista de IDs de recursos")
-    list_id_resources = df['VolumeId'].tolist() 
-    
     return list_id_resources
     
   except Exception as e:
@@ -53,9 +69,9 @@ def get_data_csv_report_file():
 
 
 def get_daily_cost_for_resource(resource_id, start_date, end_date):
-    """
-    Consulta o AWS Cost Explorer para obter o custo diário de um recurso específico.
-    """
+    '''
+      Consulta o AWS Cost Explorer para obter o custo diário de um recurso específico.
+    '''
     ce = client('ce')
 
     try:
@@ -96,8 +112,11 @@ def get_daily_cost_for_resource(resource_id, start_date, end_date):
         return None
 
 
-# funcao lambda principal
 def handler(event, context):
+  '''
+    Função Lambda que inicia o processo de estimativa de EBS sem volumes anexados.
+  '''
+  
   try:
     info("Iniciando o processo de estimativa de EBS sem volumes anexados.")
     
@@ -112,6 +131,7 @@ def handler(event, context):
       
       if daily_costs:
         info(f"Custo diário para o recurso {resource}: {daily_costs}")
+        print(f"Custo diário para o recurso {resource}: {daily_costs}")
       else:
         error(f"Não foi possível obter o custo para o recurso {resource}")
 
