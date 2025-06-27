@@ -30,11 +30,23 @@ resource "aws_s3_object" "report_folder" {
   key    = "report/"
   
 }
+# Zipando arquivo python delete ebs
+data "archive_file" "delete_ebs_zip" {
+  type        = "zip"
+  source_file = var.delete_ebs_python_path
+  output_path = var.delete_ebs_zip_path
+}
+
+data "archive_file" "estimate_ebs_zip" {
+  type        = "zip"
+  source_file = var.estimate_ebs_python_path
+  output_path = var.estimate_ebs_zip_path
+}
 
 # Upload dos scripts Python para a pasta "lambda" no Bucket S3
 resource "aws_s3_object" "delete_ebs_file" {
   bucket = aws_s3_bucket.bucket_s3.id
-  key    = "lambda/delete-ebs.zip"
+  key    = "lambda/${var.delete_ebs_zip_name}"
   source = var.delete_ebs_zip_path
   etag   = filemd5(var.delete_ebs_zip_path)
 
@@ -43,7 +55,7 @@ resource "aws_s3_object" "delete_ebs_file" {
 
 resource "aws_s3_object" "estimate_ebs_file" {
   bucket = aws_s3_bucket.bucket_s3.id
-  key    = "lambda/estimate-ebs.zip"
+  key    = "lambda/${var.estimate_ebs_zip_name}"
   source = var.estimate_ebs_zip_path
   etag   = filemd5(var.estimate_ebs_zip_path)
 
@@ -181,16 +193,6 @@ resource "aws_lambda_function" "delete_ebs_function" {
                 ]
 }
 
-#Configuração da layer que a estimate ebs vai precisar
-resource "aws_lambda_layer_version" "estimate_ebs_layer" {
-  filename = var.layer_estimate_ebs_zip_path
-  layer_name = "dependencies_estimate_ebs_function"
-  compatible_runtimes = [var.lambda_runtime]
-  source_code_hash = filebase64sha256(var.layer_estimate_ebs_zip_path)
-
-  description = "Layer contendo as dependencias da função estimate EBS"
-}
-
 resource "aws_lambda_function" "estimate_ebs_function" {
   function_name = var.lambda_estimate_ebs_function
   runtime      = var.lambda_runtime
@@ -200,9 +202,6 @@ resource "aws_lambda_function" "estimate_ebs_function" {
   role          = aws_iam_role.iam_role.arn
   s3_bucket     = aws_s3_bucket.bucket_s3.id
   s3_key        = aws_s3_object.estimate_ebs_file.key
-  
-  # # Adicionando a layer que a função estimate ebs vai precisar
-  layers = [aws_lambda_layer_version.estimate_ebs_layer.arn]
 
   # Criando variaveis de ambiente que vão ser usadas pelo codigo python também
   environment {
@@ -245,3 +244,19 @@ resource "aws_s3_bucket_notification" "s3_to_lambda_notification" {
 
 data "aws_region" "current" {}
 data "aws_caller_identity" "current" {}
+
+## Removendo os arquivos zips criados
+resource "null_resource" "remove_zip_files" {
+  provisioner "local-exec" {
+    # Comando utilizado no Linux ou MacOS para remoção dos zips
+    command = "rm -f ${data.archive_file.delete_ebs_zip.output_path} ${data.archive_file.estimate_ebs_zip.output_path}"
+    
+    # Comando utilizado no Windows, para remoção dos zips:
+    # command = "del ${data.archive_file.delete_ebs_zip.output_path} ${data.archive_file.estimate_ebs_zip.output_path}"
+  }
+
+  depends_on = [
+      aws_s3_object.delete_ebs_file,
+      aws_s3_object.estimate_ebs_file
+    ]
+}

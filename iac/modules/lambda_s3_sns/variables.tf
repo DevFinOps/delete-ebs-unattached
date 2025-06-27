@@ -5,6 +5,31 @@ variable "bucket_name" {
   default     = "devfinops.tf.bucket.delete-ebs-unattached"
 }
 
+## Informações referentes ao arquivo zip
+variable "delete_ebs_python_path" {
+  type        = string
+  description = "Caminho do arquivo Python da função Lambda de exclusão de EBS não anexados"
+  default     = "../delete_ebs_noAttached.py"
+}
+
+variable "estimate_ebs_python_path" {
+  type        = string
+  description = "Caminho do arquivo Python da função Lambda de exclusão de EBS não anexados"
+  default     = "../estimate_ebs_noAttached.py"
+}
+
+variable "delete_ebs_zip_name" {
+  type        = string
+  description = "Caminho do arquivo Python da função Lambda de estimativa de EBS não anexados"
+  default     = "delete-ebs.zip"
+}
+
+variable "estimate_ebs_zip_name" {
+  type        = string
+  description = "Caminho do arquivo Python da função Lambda de estimativa de EBS não anexados"
+  default     = "estimate-ebs.zip"
+}
+
 ## Informações do SNS ##
 variable "sns_topic_name" {
   type        = string
@@ -15,7 +40,7 @@ variable "sns_topic_name" {
 variable "sns_email_endpoint" {
   type        = string
   description = "Endereço de e-mail para receber notificações do SNS"
-  default     = "vesteves33@gmail.com" ##Substitua pelo seu e-mail
+  default     = "vesteves33@gmail.com"
 }
 
 ## Informações do IAM ##
